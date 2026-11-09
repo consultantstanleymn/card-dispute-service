@@ -29,19 +29,30 @@ public sealed record DisputeView(
     DateOnly ResponseDeadline,
     long Version);
 
+public interface IDisputeMetrics
+{
+    void RecordOpened(string reason);
+    void RecordTransition(string fromStatus, string toStatus);
+}
+
 public sealed class DisputeService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly DisputesDbContext _db;
     private readonly IdempotencyStore _idempotencyStore;
+    private readonly IDisputeMetrics? _metrics;
 
-    public DisputeService(DisputesDbContext db, IdempotencyStore idempotencyStore)
+    public DisputeService(
+        DisputesDbContext db,
+        IdempotencyStore idempotencyStore,
+        IDisputeMetrics? metrics = null)
     {
         ArgumentNullException.ThrowIfNull(db);
         ArgumentNullException.ThrowIfNull(idempotencyStore);
         _db = db;
         _idempotencyStore = idempotencyStore;
+        _metrics = metrics;
     }
 
     public async Task<CreateDisputeResult> CreateAsync(
@@ -152,6 +163,8 @@ public sealed class DisputeService
             return new CreateDisputeResult(raced.StatusCode, raced.ResponseBody, ReadId(raced.ResponseBody));
         }
 
+        _metrics?.RecordOpened(ToDb(reason));
+
         return new CreateDisputeResult(StatusCodes.Created, body, row.Id);
     }
 
@@ -197,6 +210,8 @@ public sealed class DisputeService
         await ApplyAsync(row, next, clientId, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
+        RecordTransition(current, next);
+
         return Map(row);
     }
 
@@ -223,6 +238,8 @@ public sealed class DisputeService
         await ApplyAsync(row, target, clientId, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
+        RecordTransition(current, target);
+
         return Map(row);
     }
 
@@ -245,6 +262,8 @@ public sealed class DisputeService
 
         await ApplyAsync(row, DisputeStatus.Withdrawn, clientId, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+
+        RecordTransition(current, DisputeStatus.Withdrawn);
 
         return Map(row);
     }
@@ -291,6 +310,11 @@ public sealed class DisputeService
         }
 
         await _db.Entry(row).ReloadAsync(cancellationToken);
+    }
+
+    private void RecordTransition(DisputeStatus from, DisputeStatus to)
+    {
+        _metrics?.RecordTransition(ToDb(from), ToDb(to));
     }
 
     private static void EnsureVersion(DisputeRow row, long version)

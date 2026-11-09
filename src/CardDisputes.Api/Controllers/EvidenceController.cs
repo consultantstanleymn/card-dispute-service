@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using CardDisputes.Api.Metrics;
 using CardDisputes.Infrastructure;
 using CardDisputes.Infrastructure.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,17 @@ public sealed class EvidenceController : ControllerBase
 
     private readonly DisputesDbContext _db;
     private readonly IEvidenceStore _store;
+    private readonly DisputeMetrics _metrics;
 
-    public EvidenceController(DisputesDbContext db, IEvidenceStore store)
+    public EvidenceController(DisputesDbContext db, IEvidenceStore store, DisputeMetrics metrics)
     {
+        ArgumentNullException.ThrowIfNull(db);
+        ArgumentNullException.ThrowIfNull(store);
+        ArgumentNullException.ThrowIfNull(metrics);
+
         _db = db;
         _store = store;
+        _metrics = metrics;
     }
 
     [HttpPost("evidence")]
@@ -143,6 +150,8 @@ public sealed class EvidenceController : ControllerBase
 
         _db.EvidenceFiles.Add(evidence);
         await _db.SaveChangesAsync(cancellationToken);
+
+        _metrics.EvidenceUploadBytes.Observe(sizeBytes);
 
         return StatusCode(
             StatusCodes.Status201Created,
