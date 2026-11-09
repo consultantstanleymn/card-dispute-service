@@ -10,11 +10,26 @@ namespace CardDisputes.Api.Controllers;
 public sealed class DisputesController : ControllerBase
 {
     private readonly DisputeService _service;
+    private readonly DisputeQueries _queries;
 
-    public DisputesController(DisputeService service)
+    public DisputesController(DisputeService service, DisputesDbContext db)
     {
         ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(db);
         _service = service;
+        _queries = new DisputeQueries(db);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<DisputePage>> List(
+        [FromQuery] string? status,
+        [FromQuery] string? reason,
+        [FromQuery] int? limit,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken)
+    {
+        var page = await _queries.ListAsync(status, reason, limit, cursor, cancellationToken);
+        return Ok(page);
     }
 
     [HttpPost]
