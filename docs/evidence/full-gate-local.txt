@@ -1,0 +1,52 @@
+Full gate, commit edadf8c, 2026-11-09
+cds-postgres ready
+minio image not local, skipping
+Test run for /src/tests/CardDisputes.UnitTests/bin/Debug/net10.0/CardDisputes.UnitTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    30, Skipped:     0, Total:    30, Duration: 100 ms - CardDisputes.UnitTests.dll (net10.0)
+Test run for /src/tests/CardDisputes.IntegrationTests/bin/Debug/net10.0/CardDisputes.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    32, Skipped:     1, Total:    33, Duration: 55 s - CardDisputes.IntegrationTests.dll (net10.0)
+Running secret scan
+[90m4:03PM[0m [32mINF[0m [1m13 commits scanned.[0m
+[90m4:03PM[0m [32mINF[0m [1mscanned ~212989 bytes (212.99 KB) in 101ms[0m
+[90m4:03PM[0m [32mINF[0m [1mno leaks found[0m
+Running filesystem scan
+Skipping build output directories: src/CardDisputes.Domain/obj,src/CardDisputes.Domain/bin,src/CardDisputes.Infrastructure/obj,src/CardDisputes.Infrastructure/bin,src/CardDisputes.Api/obj,src/CardDisputes.Api/bin,tests/CardDisputes.UnitTests/obj,tests/CardDisputes.UnitTests/bin,tests/CardDisputes.IntegrationTests/obj,tests/CardDisputes.IntegrationTests/bin
+2026-11-09T16:03:15-05:00	INFO	[vuln] Vulnerability scanning is enabled
+2026-11-09T16:03:15-05:00	INFO	[secret] Secret scanning is enabled
+2026-11-09T16:03:15-05:00	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-11-09T16:03:15-05:00	INFO	[secret] Please see https://trivy.dev/docs/v0.69/guide/scanner/secret#recommendation for faster secret detection
+2026-11-09T16:03:15-05:00	INFO	Number of language-specific files	num=0
+2026-11-09T16:03:15-05:00	WARN	[report] Supported files for scanner(s) not found.	scanners=[vuln]
+2026-11-09T16:03:15-05:00	INFO	[report] No issues detected with scanner(s).	scanners=[secret]
+
+Report Summary
+
+┌────────┬──────┬─────────────────┬─────────┐
+│ Target │ Type │ Vulnerabilities │ Secrets │
+├────────┼──────┼─────────────────┼─────────┤
+│   -    │  -   │        -        │    -    │
+└────────┴──────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+Checking package vulnerabilities
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+The following sources were used:
+   https://api.nuget.org/v3/index.json
+
+The given project `CardDisputes.Domain` has no vulnerable packages given the current sources.
+The given project `CardDisputes.Infrastructure` has no vulnerable packages given the current sources.
+The given project `CardDisputes.Api` has no vulnerable packages given the current sources.
+The given project `CardDisputes.UnitTests` has no vulnerable packages given the current sources.
+The given project `CardDisputes.IntegrationTests` has no vulnerable packages given the current sources.
+Checking workflow syntax
+Security gate passed
+gate rc=0
+cds-postgres removed
