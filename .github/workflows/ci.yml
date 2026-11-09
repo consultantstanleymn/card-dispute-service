@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore CardDisputes.sln
+
+      - name: Build
+        run: dotnet build CardDisputes.sln --no-restore -warnaserror
+
+      - name: Unit tests
+        run: dotnet test tests/CardDisputes.UnitTests/CardDisputes.UnitTests.csproj --no-build --no-restore --verbosity normal
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    needs: build-test
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: disputes
+          POSTGRES_PASSWORD: disputes
+          POSTGRES_DB: disputes
+        ports:
+          - 26632:5432
+        options: >-
+          --health-cmd "pg_isready -U disputes -d disputes"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      CDS_PG: Host=127.0.0.1;Port=26632;Database=disputes;Username=disputes;Password=disputes
+      CDS_S3_BUCKET: cds-evidence
+      AWS_ACCESS_KEY_ID: cdsadmin
+      AWS_SECRET_ACCESS_KEY: cdsadmin123456
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore CardDisputes.sln
+
+      - name: Build
+        run: dotnet build CardDisputes.sln --no-restore -warnaserror
+
+      - name: Start MinIO
+        run: |
+          docker run -d --name cds-minio -p 127.0.0.1:26660:9000 \
+            -e MINIO_ROOT_USER=cdsadmin -e MINIO_ROOT_PASSWORD=cdsadmin123456 \
+            minio/minio:RELEASE.2025-04-22T22-12-26Z server /data
+          for _ in $(seq 1 30); do curl -fsS http://127.0.0.1:26660/minio/health/live && break; sleep 2; done
+
+      - name: Integration tests
+        run: dotnet test tests/CardDisputes.IntegrationTests/CardDisputes.IntegrationTests.csproj --no-build --no-restore --verbosity normal
+
+  cfn-lint:
+    name: Lint CloudFormation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install cfn-lint
+        run: pip install cfn-lint
+
+      - name: Lint template
+        run: cfn-lint infra/cloudformation/dispute-service.yaml
+
+  image:
+    name: Build image and scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build container image
+        run: docker build -t card-dispute-service:ci .
+
+      - name: Scan container image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: card-dispute-service:ci
+          scan-type: image
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
