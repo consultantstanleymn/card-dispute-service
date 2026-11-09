@@ -1,0 +1,30 @@
+2026-11-09T15:51:02-05:00	INFO	[vuln] Vulnerability scanning is enabled
+2026-11-09T15:51:02-05:00	INFO	[secret] Secret scanning is enabled
+2026-11-09T15:51:02-05:00	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-11-09T15:51:02-05:00	INFO	[secret] Please see https://trivy.dev/docs/v0.69/guide/scanner/secret#recommendation for faster secret detection
+2026-11-09T15:51:05-05:00	WARN	[dotnet] Multiple root projects found in .deps.json	existing_root="CardDisputes.Domain/1.0.0" new_root="CardDisputes.Api/1.0.0"
+2026-11-09T15:51:05-05:00	WARN	[dotnet] Multiple root projects found in .deps.json	existing_root="CardDisputes.Domain/1.0.0" new_root="CardDisputes.Infrastructure/1.0.0"
+2026-11-09T15:51:05-05:00	INFO	Detected OS	family="ubuntu" version="24.04"
+2026-11-09T15:51:05-05:00	INFO	[ubuntu] Detecting vulnerabilities...	os_version="24.04" pkg_num=97
+2026-11-09T15:51:05-05:00	INFO	Number of language-specific files	num=3
+2026-11-09T15:51:05-05:00	INFO	[dotnet-core] Detecting vulnerabilities...
+
+Report Summary
+
+┌──────────────────────────────────────────────────────────────────────────────────┬─────────────┬─────────────────┬─────────┐
+│                                      Target                                      │    Type     │ Vulnerabilities │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+│ card-dispute-service:local (ubuntu 24.04)                                        │   ubuntu    │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+│ app/CardDisputes.Api.deps.json                                                   │ dotnet-core │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+│ usr/share/dotnet/shared/Microsoft.AspNetCore.App/10.0.14/Microsoft.AspNetCore.A- │ dotnet-core │        0        │    -    │
+│ pp.deps.json                                                                     │             │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼─────────────┼─────────────────┼─────────┤
+│ usr/share/dotnet/shared/Microsoft.NETCore.App/10.0.14/Microsoft.NETCore.App.dep- │ dotnet-core │        0        │    -    │
+│ s.json                                                                           │             │                 │         │
+└──────────────────────────────────────────────────────────────────────────────────┴─────────────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
