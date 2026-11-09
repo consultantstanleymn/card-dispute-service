@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+**/out/
+**/artifacts/
+.git/
+.github/
+.vs/
+.idea/
+docs/
+TestResults/
+*.trx
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.DS_Store

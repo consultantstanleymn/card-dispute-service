@@ -1,0 +1,57 @@
+services:
+  cds-postgres:
+    image: docker.io/library/postgres:16-alpine
+    container_name: cds-postgres
+    environment:
+      POSTGRES_USER: disputes
+      POSTGRES_PASSWORD: disputes
+      POSTGRES_DB: disputes
+    ports:
+      - "127.0.0.1:26632:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U disputes -d disputes"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - cds-postgres-data:/var/lib/postgresql/data
+
+  cds-minio:
+    image: docker.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: cds-minio
+    profiles:
+      - s3
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: cdsadmin
+      MINIO_ROOT_PASSWORD: cdsadmin123456
+    ports:
+      - "127.0.0.1:26660:9000"
+      - "127.0.0.1:26661:9001"
+    volumes:
+      - cds-minio-data:/data
+
+  cds-api:
+    image: card-dispute-service:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cds-api
+    depends_on:
+      cds-postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      Database__MigrateOnStart: "true"
+      ConnectionStrings__Disputes: Host=cds-postgres;Port=5432;Database=disputes;Username=disputes;Password=disputes
+      Evidence__S3__ServiceURL: http://cds-minio:9000
+      Evidence__S3__Bucket: disputes
+      Evidence__S3__Region: us-east-1
+      ApiKeys__smoke-key-local-only: smoke-client
+    ports:
+      - "127.0.0.1:26600:8080"
+    command: ["dotnet", "CardDisputes.Api.dll", "--migrate"]
+
+volumes:
+  cds-postgres-data:
+  cds-minio-data:

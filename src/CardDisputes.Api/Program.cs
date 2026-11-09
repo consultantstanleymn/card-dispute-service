@@ -54,7 +54,8 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+var migrateOnStart = builder.Configuration.GetValue<bool>("Database:MigrateOnStart");
+if ((migrateOnStart && args.Contains("--migrate")) || app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     scope.ServiceProvider.GetRequiredService<DisputesDbContext>().Database.Migrate();
